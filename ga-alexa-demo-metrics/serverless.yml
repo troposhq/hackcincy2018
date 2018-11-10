@@ -1,0 +1,12 @@
+service: ga-alexa-demo # NOTE: update this with your service name
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+
+functions:
+  metrics:
+    handler: index.handler
+    events:
+      - alexaSkill: amzn1.ask.skill.e0bca228-6711-43a9-a6de-04c77926e257 
+
