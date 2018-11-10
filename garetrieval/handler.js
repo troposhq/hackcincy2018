@@ -52,7 +52,7 @@ module.exports.main = async (event, context) => {
       reportRequests: [
         {
           viewId: gaViewId,
-          dateRanges: [{ 'startDate': '2018-11-09', endDate: '2018-11-10' }],
+          // dateRanges: [{ 'startDate': '2018-11-09', endDate: '2018-11-10' }],
           metrics: [
             { expression: 'ga:users' },
             { expression: 'ga:newUsers' },
