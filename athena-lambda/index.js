@@ -42,10 +42,15 @@ async function queryAthena(query, db, bucket) {
     Bucket: resultsBucket,
     Key: resultsKey,
   };
+  console.log(s3Params)
 
-  const s3Object = s3Client.getObject(s3Params).createReadStream();
+  return s3Client.getObject(s3Params).createReadStream();
+}
 
-  return parseMetric(s3Object);
+async function queryMetricFromAthena(query, db, bucket) {
+  const queryResult = await queryAthena(query, db, bucket);
+
+  return parseMetric(queryResult);
 }
 
 function parseMetric(rs) {
@@ -89,14 +94,48 @@ async function upsertDynamo(queryKey, metric) {
   });
 }
 
+// just returns column names
+async function parseDescribe(rs) {
+  const columns = [];
+  // ga:users            	string              	from deserializer
+  // ga:newusers         	string              	from deserializer
+  // ga:percentnewsessions	string              	from deserializer
+  // ga:sessionsperuser  	string              	from deserializer
+  return new Promise((resolve, reject) => {
+    rs.on('data', chunk => {
+      chunk = chunk.toString('utf-8');
+      const matches = chunk.match(/^\S*/gm);
+      columns.push(...matches);
+    });
+    rs.on('end', () => resolve(columns));
+  });
+}
+
+async function getColumnsForTable(tableName, db, outputLocation) {
+  const query = `describe ${tableName}`;
+  const describeResult = await queryAthena(query, db, outputLocation);
+
+  return parseDescribe(describeResult);
+}
+
+// {"ga:users":"2","ga:newusers":"2","ga:percentnewsessions":"100.0","ga:sessionsperuser":"1.0"}
+
 module.exports.handler = async (event, context, cb) => {
-  const queryKey = "new_users";
-  // run query
-  const query = process.env.ATHENA_QUERY;
   const db = process.env.ATHENA_DB;
+  const table = process.env.ATHENA_TABLE;
   const outputLocation = process.env.ATHENA_OUTPUT_LOCATION;
-  const athenaResult = await queryAthena(query, db, outputLocation);
-  console.log(athenaResult);
-  // upsert into dynamo
-  await upsertDynamo(queryKey, athenaResult);
+
+  const columns = await getColumnsForTable(table, db, outputLocation);
+
+  for(const column of columns) {
+    // run query
+    const query = process.env.ATHENA_QUERY
+      .replace("COLUMN_REPLACE_ME", column)
+      .replace("TABLE_NAME_REPLACE", table);
+    console.log(query)
+    const athenaResult = await queryMetricFromAthena(query, db, outputLocation);
+    console.log(athenaResult);
+    // upsert into dynamo
+    await upsertDynamo(column, athenaResult);
+  }
 };
