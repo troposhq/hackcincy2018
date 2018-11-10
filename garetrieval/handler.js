@@ -17,8 +17,6 @@ function mapReportToRows(report) {
     dimensionHeaders = [...report.columnHeader.dimensions];
   }
   const metricHeaders = report.columnHeader.metricHeader.metricHeaderEntries.map(x => x.name);
-  // const columns = [...dimensionHeaders, ...metricHeaders];
-  // console.log(columns);
   report.data.rows.forEach(({ dimensions, metrics }) => {
     const row = {};
     if (dimensions) {
@@ -52,7 +50,7 @@ module.exports.main = async (event, context) => {
       reportRequests: [
         {
           viewId: gaViewId,
-          // dateRanges: [{ 'startDate': '2018-11-09', endDate: '2018-11-10' }],
+          dateRanges: [{ 'startDate': '2018-11-09', endDate: '2018-11-11' }],
           metrics: [
             { expression: 'ga:users' },
             { expression: 'ga:newUsers' },
