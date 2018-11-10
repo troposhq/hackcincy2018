@@ -22,6 +22,6 @@ functions:
       - schedule: rate(5 minutes)
     environment:
       REGION: 'us-east-1'
-      ATHENA_QUERY: 'SELECT * FROM "hackcincy2018"."user_metrics" LIMIT 1;'
+      ATHENA_QUERY: 'SELECT "ga:newusers" FROM "hackcincy2018"."user_metrics" LIMIT 1;'
       ATHENA_DB: hackcincy2018
       ATHENA_OUTPUT_LOCATION: 's3://hackcincy2018-athena-results'
