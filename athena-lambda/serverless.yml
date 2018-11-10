@@ -10,6 +10,8 @@ provider:
         - "s3:*"
         - "dynamodb:*"
         - "athena:*"
+        - "xray:*"
+        - "glue:*"
       Resource: "*"
 
 functions:

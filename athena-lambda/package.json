@@ -12,7 +12,9 @@
     "serverless": "^1.32.0"
   },
   "dependencies": {
+    "amazon-s3-uri": "0.0.3",
     "aws-sdk": "^2.353.0",
+    "csvtojson": "^2.0.8",
     "sleep-promise": "^8.0.1"
   }
 }

@@ -1,5 +1,7 @@
 const AWS = require('aws-sdk');
 const sleep = require('sleep-promise');
+const csv =require('csvtojson');
+const AmazonS3URI = require('amazon-s3-uri')
 
 async function queryAthena(query, db, bucket) {
   const athenaClient = new AWS.Athena({
@@ -34,11 +36,31 @@ async function queryAthena(query, db, bucket) {
     }
   }
 
+  const { bucket: resultsBucket, key: resultsKey } = AmazonS3URI(resultsFile);
+  console.log(resultsBucket, resultsKey)
+  const s3Params = {
+    Bucket: resultsBucket,
+    Key: resultsKey,
+  };
 
-  // TODO: download and parse metric from s3
+  const s3Object = s3Client.getObject(s3Params).createReadStream();
 
-  let metricValue = 0;
-  return metricValue;
+  return parseMetric(s3Object);
+}
+
+function parseMetric(rs) {
+  return new Promise((resolve, reject) => {
+    let metric = 0;
+    rs
+      .pipe(csv()
+      .on('data', (data) => {
+        const row = data.toString('utf8');
+        // TODO: parse row and set metric
+        console.log(row);
+      }))
+      .on('done', () => resolve(metric))
+      .on('error', reject);
+  });
 }
 
 function upsertDynamo() {
