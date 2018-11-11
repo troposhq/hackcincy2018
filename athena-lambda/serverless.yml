@@ -19,7 +19,7 @@ functions:
     handler: index.handler
     timeout: 120
     events:
-      - schedule: rate(5 minutes)
+      - schedule: rate(1 minute)
     environment:
       REGION: 'us-east-1'
       ATHENA_TABLE: 'user_metrics'
