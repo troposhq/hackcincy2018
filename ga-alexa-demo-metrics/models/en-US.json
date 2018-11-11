@@ -1,0 +1,70 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "tropos ai",
+      "intents": [
+        {
+          "name": "AMAZON.FallbackIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": []
+        },
+        {
+          "name": "WhatsMyMetric",
+          "slots": [
+            {
+              "name": "metric",
+              "type": "available_metrics"
+            }
+          ],
+          "samples": [
+            "How many {metric} do we have",
+            "How many {metric} have we had in the past week",
+            "What is the average {metric}"
+          ]
+        }
+      ],
+      "types": [
+        {
+          "name": "available_metrics",
+          "values": [
+            {
+              "name": {
+                "value": "USERS"
+              }
+            },
+            {
+              "name": {
+                "value": "NEW USERS"
+              }
+            },
+            {
+              "name": {
+                "value": "SESSION LENGTH PER USER"
+              }
+            },
+            {
+              "name": {
+                "value": "PERCENT NEW SESSIONS"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

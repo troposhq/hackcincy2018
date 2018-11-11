@@ -18,5 +18,5 @@ functions:
   metrics:
     handler: index.handler
     events:
-      - alexaSkill: amzn1.ask.skill.e0bca228-6711-43a9-a6de-04c77926e257
+      - alexaSkill: amzn1.ask.skill.498c0431-be49-44bc-84e6-2076132f0b5d
 
