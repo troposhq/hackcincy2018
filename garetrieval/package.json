@@ -12,5 +12,8 @@
   "dependencies": {
     "aws-sdk": "^2.353.0",
     "googleapis": "^35.0.0"
+  },
+  "devDependencies": {
+    "serverless": "^1.32.0"
   }
 }
