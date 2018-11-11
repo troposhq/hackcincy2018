@@ -18,6 +18,7 @@
     "serverless": "^1.32.0"
   },
   "dependencies": {
-    "ask-sdk": "^2.1.0"
+    "ask-sdk": "^2.1.0",
+    "aws-sdk": "^2.353.0"
   }
 }

@@ -1,5 +1,16 @@
 const Alexa = require('ask-sdk');
 
+var AWS = require('aws-sdk');
+
+const config = {
+	region: "us-east-1",
+	endpoint: process.env.ENDPOINT,
+	accessKeyId: process.env.AWS_ACCESS_KEY,
+	secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+}
+
+let dynamo = new AWS.DynamoDB.DocumentClient(config);
+
 const LaunchRequestHandler = {
 	canHandle(handlerInput) {
 		return handlerInput.requestEnvelope.request.type === 'LaunchRequest';
@@ -17,23 +28,47 @@ const LaunchRequestHandler = {
 // The primary intent handler for responding with Business insights
 const MetricsIntentHandler = {
 	canHandle(handlerInput) {
-		return handlerInput.requestEnvelope.request.type === 'IntentRequest'
-			&& handlerInput.requestEnvelope.request.intent.name === 'WhatsMyMetric';
+		return handlerInput.requestEnvelope.request.type === 'IntentRequest' &&
+			handlerInput.requestEnvelope.request.intent.name === 'WhatsMyMetric';
 	},
-	handle(handlerInput) {
+	async handle(handlerInput) {
 		// TODO: they use an env var for slotname in the sample
-		const { intent } = handlerInput.requestEnvelope.request;
-		const { slots } = intent;
+		const {
+			intent
+		} = handlerInput.requestEnvelope.request;
+		const {
+			slots
+		} = intent;
 		const slotName = 'metric';
 		const slotValue = slots[slotName].value;
+
+		const responses = {
+			'NEW USERS': (metric) => `You have had ${metric} new users join this week.`,
+			'USERS': (metric) => `The total number of users is ${metric}.`,
+			'SESSIONS PER USER': (metric) => `The average session per user is ${metric}.`,
+			'PERCENT NEW SESSIONS': (metric) => `The percent of new sessions is ${metric}.`,
+		}
+
 		const slotMetrics = {
-			'BIGGEST CUSTOMER IN NORTH AMERICA': 'Netflix, Inc',
-			'SALES GROWTH BETWEEN Q1 AND Q2 IN THE ASIAN MARKETS': '$7,246,000',
+			'SESSIONS PER USER': 'ga:sessionsperuser',
+			'PERCENT NEW SESSIONS': 'ga"percentnewsessions',
+			'NEW USERS': 'ga:newusers',
+			'USERS': 'ga:users',
 		};
+
 		const metric = slotMetrics[slotValue.toUpperCase()];
 		let speechText = `I'm sorry. I don't have enough data to determine the ${slotValue}.`;
 		if (metric) {
-			speechText = `The ${slotValue} is ${slotMetrics[slotValue.toUpperCase()]}`;
+			const params = {
+				Key: {
+					'metric': metric
+				},
+				TableName: "hackcincy2018_metrics"
+			};
+
+			const query = await dynamo.get(params).promise();
+			const result = query.Item.value;
+			speechText = responses[slotValue.toUpperCase()](result);
 		}
 
 		return handlerInput.responseBuilder
@@ -45,8 +80,8 @@ const MetricsIntentHandler = {
 
 const HelpIntentHandler = {
 	canHandle(handlerInput) {
-		return handlerInput.requestEnvelope.request.type === 'IntentRequest'
-			&& handlerInput.requestEnvelope.request.intent.name === 'AMAZON.HelpIntent';
+		return handlerInput.requestEnvelope.request.type === 'IntentRequest' &&
+			handlerInput.requestEnvelope.request.intent.name === 'AMAZON.HelpIntent';
 	},
 	handle(handlerInput) {
 		const speechText = 'You can ask me for metrics about your business';
@@ -61,9 +96,9 @@ const HelpIntentHandler = {
 
 const CancelAndStopIntentHandler = {
 	canHandle(handlerInput) {
-		return handlerInput.requestEnvelope.request.type === 'IntentRequest'
-			&& (handlerInput.requestEnvelope.request.intent.name === 'AMAZON.CancelIntent'
-					|| handlerInput.requestEnvelope.request.intent.name === 'AMAZON.StopIntent');
+		return handlerInput.requestEnvelope.request.type === 'IntentRequest' &&
+			(handlerInput.requestEnvelope.request.intent.name === 'AMAZON.CancelIntent' ||
+				handlerInput.requestEnvelope.request.intent.name === 'AMAZON.StopIntent');
 	},
 	handle(handlerInput) {
 		const speechText = 'Goodbye!';
@@ -99,13 +134,13 @@ const ErrorHandler = {
 	},
 };
 
-	exports.handler = Alexa.SkillBuilders.custom()
-.addRequestHandlers(
+exports.handler = Alexa.SkillBuilders.custom()
+	.addRequestHandlers(
 		LaunchRequestHandler,
 		MetricsIntentHandler,
 		HelpIntentHandler,
 		CancelAndStopIntentHandler,
 		SessionEndedRequestHandler,
-		)
-.addErrorHandlers(ErrorHandler)
+	)
+	.addErrorHandlers(ErrorHandler)
 	.lambda();

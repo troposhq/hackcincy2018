@@ -3,10 +3,20 @@ service: ga-alexa-demo # NOTE: update this with your service name
 provider:
   name: aws
   runtime: nodejs8.10
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - "logs:*"
+        - "s3:*"
+        - "dynamodb:*"
+        - "athena:*"
+        - "xray:*"
+        - "glue:*"
+      Resource: "*"
 
 functions:
   metrics:
     handler: index.handler
     events:
-      - alexaSkill: amzn1.ask.skill.e0bca228-6711-43a9-a6de-04c77926e257 
+      - alexaSkill: amzn1.ask.skill.e0bca228-6711-43a9-a6de-04c77926e257
 
